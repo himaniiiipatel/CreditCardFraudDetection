@@ -1,37 +1,4 @@
-import streamlit as st
-
-import timeit
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-import warnings
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier,ExtraTreesClassifier
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection import GridSearchCV
-from imblearn.over_sampling import SMOTE
-from xgboost import XGBClassifier
-from xgboost import Booster
-from xgboost import DMatrix
-from sklearn import metrics
-from datetime import datetime
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier,ExtraTreesClassifier
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection import GridSearchCV
-from imblearn.over_sampling import SMOTE
-from xgboost import XGBClassifier
-from xgboost import Booster
-from xgboost import DMatrix
-from sklearn import metrics
-from datetime import datetime
-import plotly.figure_factory as ff
+matplotlib==3.4.1
+numpy==1.20.2
+pandas==1.2.3
+streamlit==0.79.0
