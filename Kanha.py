@@ -260,11 +260,11 @@ if st.sidebar.checkbox('Run a credit card fraud detection model'):
         if imb_rect=='No Rectifier':
             compute_performance(model, X_train_sfs_scaled, y_train,X_test_sfs_scaled,y_test)
         elif imb_rect=='SMOTE':
-                rect=smt
-                st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
-                X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
-                st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
-                compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
+            rect=smt
+            st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+            X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+            t.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+            compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
         elif imb_rect=='Near Miss':
             rect=nr
             st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
