@@ -11,7 +11,7 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 
 df=st.cache(pd.read_csv)('creditcard.csv')
 
-
+#df = df.sample(frac=0.1, random_state = 48)
 
 # Print shape and description of the data
 if st.sidebar.checkbox('Show what the dataframe looks like'):
@@ -88,20 +88,26 @@ def feature_sort(model,X_train,y_train):
     return imp
 
 #Classifiers for feature importance
-clf=['Random Forest']
-mod_feature = st.sidebar.selectbox('Model for Training and Testing Dataset', clf)
+clf=['Extra Trees','Random Forest']
+mod_feature = st.sidebar.selectbox('Which model for feature importance?', clf)
 
 start_time = timeit.default_timer()
-# if mod_feature=='Extra Trees':
-#     model=etree
-#     importance=feature_sort(model,X_train,y_train)
-if mod_feature=='Random Forest':
+if mod_feature=='Extra Trees':
+    model=etree
+    importance=feature_sort(model,X_train,y_train)
+elif mod_feature=='Random Forest':
     model=rforest
     importance=feature_sort(model,X_train,y_train)
 elapsed = timeit.default_timer() - start_time
 st.write('Execution Time for feature selection: %.2f minutes'%(elapsed/60))    
 
-
+#Plot of feature importance
+if st.sidebar.checkbox('Show plot of feature importance'):
+    plt.bar([x for x in range(len(importance))], importance)
+    plt.title('Feature Importance')
+    plt.xlabel('Feature (Variable Number)')
+    plt.ylabel('Importance')
+    st.pyplot()
 
 feature_imp=list(zip(features,importance))
 feature_sort=sorted(feature_imp, key = lambda x: x[1])
@@ -110,10 +116,12 @@ n_top_features = st.sidebar.slider('Number of top features', min_value=5, max_va
 
 top_features=list(list(zip(*feature_sort[-n_top_features:]))[0])
 
-
+if st.sidebar.checkbox('Show selected top features'):
+    st.write('Top %d features in order of importance are: %s'%(n_top_features,top_features[::-1]))
 
 X_train_sfs=X_train[top_features]
 X_test_sfs=X_test[top_features]
+
 X_train_sfs_scaled=X_train_sfs
 X_test_sfs_scaled=X_test_sfs
 
@@ -150,52 +158,120 @@ if st.sidebar.checkbox('Run a credit card fraud detection model'):
     
     alg=['Random Forest','Logistic Regression','Xgboost']
     classifier = st.sidebar.selectbox('Which algorithm?', alg)
-    rectifier=['SMOTE']
+    rectifier=['SMOTE','No Rectifier']
     imb_rect = st.sidebar.selectbox('Which imbalanced class rectifier?', rectifier) 
     
     if classifier=='Logistic Regression':
         model=logreg
-        
-        if imb_rect=='SMOTE':
+        if imb_rect=='No Rectifier':
+            compute_performance(model, X_train_sfs_scaled, y_train,X_test_sfs_scaled,y_test)
+        elif imb_rect=='SMOTE':
                 rect=smt
                 st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
                 X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
                 st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
                 compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
-       
-    
+        # elif imb_rect=='Near Miss':
+        #     rect=nr
+        #     st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+        #     X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+        #     st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+        #     compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
         
     
+        
+    # elif classifier == 'k Nearest Neighbor':
+    #     model=knn
+    #     if imb_rect=='No Rectifier':
+    #         compute_performance(model, X_train_sfs_scaled, y_train,X_test_sfs_scaled,y_test)
+    #     elif imb_rect=='SMOTE':
+    #             rect=smt
+    #             st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+    #             X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+    #             st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+    #             compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
+    #     elif imb_rect=='Near Miss':
+    #         rect=nr
+    #         st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+    #         X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+    #         st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+    #         compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
+         
+    
+    # elif classifier == 'Support Vector Machine':
+    #     model=svm
+    #     if imb_rect=='No Rectifier':
+    #         compute_performance(model, X_train_sfs_scaled, y_train,X_test_sfs_scaled,y_test)
+    #     elif imb_rect=='SMOTE':
+    #             rect=smt
+    #             st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+    #             X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+    #             st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+    #             compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
+    #     elif imb_rect=='Near Miss':
+    #         rect=nr
+    #         st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+    #         X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+    #         st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+    #         compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
 
     elif classifier == 'Xgboost':
         model=xgb
-        # if imb_rect=='No Rectifier':
-        #     compute_performance(model, X_train_sfs_scaled, y_train,X_test_sfs_scaled,y_test)
-        if imb_rect=='SMOTE':
+        if imb_rect=='No Rectifier':
+            compute_performance(model, X_train_sfs_scaled, y_train,X_test_sfs_scaled,y_test)
+        elif imb_rect=='SMOTE':
                 rect=smt
                 st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
                 X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
                 st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
                 compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
-
+        # elif imb_rect=='Near Miss':
+        #     rect=nr
+        #     st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+        #     X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+        #     st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+        #     compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
+        
 
         
     elif classifier == 'Random Forest':
         model=rforest
-        # if imb_rect=='No Rectifier':
-        #     compute_performance(model, X_train_sfs_scaled, y_train,X_test_sfs_scaled,y_test)
-        if imb_rect=='SMOTE':
+        if imb_rect=='No Rectifier':
+            compute_performance(model, X_train_sfs_scaled, y_train,X_test_sfs_scaled,y_test)
+        elif imb_rect=='SMOTE':
                 rect=smt
                 st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
                 X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
                 st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
                 compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
-        
+        # elif imb_rect=='Near Miss':
+        #     rect=nr
+        #     st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+        #     X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+        #     st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+        #     compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test) 
+
         
            
         
             
-    
+    # elif classifier == 'Extra Trees':
+    #     model=etree
+    #     if imb_rect=='No Rectifier':
+    #         compute_performance(model, X_train_sfs_scaled, y_train,X_test_sfs_scaled,y_test)
+    #     elif imb_rect=='SMOTE':
+    #             rect=smt
+    #             st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+    #             X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+    #             st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+    #             compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
+    #     elif imb_rect=='Near Miss':
+    #         rect=nr
+    #         st.write('Shape of imbalanced y_train: ',np.bincount(y_train))
+    #         X_train_bal, y_train_bal = rect.fit_sample(X_train_sfs_scaled, y_train)
+    #         st.write('Shape of balanced y_train: ',np.bincount(y_train_bal))
+    #         compute_performance(model, X_train_bal, y_train_bal,X_test_sfs_scaled,y_test)
+       
 
 #data representation
 import streamlit as st
@@ -219,7 +295,7 @@ def load_meal_data(nrows):
     data = pd.read_csv('creditcard.csv',nrows=nrows)
     return data
 
-# data_load_state = st.text('Loading data...')
+data_load_state = st.text('Loading data...')
 weekly_data = load_data(50)
 center_info_data = load_center_data(50)
 meal_data = load_meal_data(50)
